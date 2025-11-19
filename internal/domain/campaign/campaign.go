@@ -1,43 +1,42 @@
 package campaign
 
 import (
-	"errors"
+	internalerrors "campaign-manager/internal/internalErrors"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Contact struct {
-	Email string
+	Email string `validate:"email"`
 }
 
 type Campaign struct {
-	ID          string
-	Name        string
-	Description string
-	CreatedAt   time.Time
-	Contacts    []Contact
+	ID          string    `validate:"required"`
+	Name        string    `validate:"min=5,max=24"`
+	Description string    `validate:"min=5,max=1024"`
+	CreatedAt   time.Time `validate:"required"`
+	Contacts    []Contact `validate:"min=1,dive"`
 }
 
 func CreateCampaign(name string, description string, emails []string) (*Campaign, error) {
-	if name == "" {
-		return nil, errors.New("campaign name cannot be empty")
-	} else if description == "" {
-		return nil, errors.New("campaign description cannot be empty")
-	} else if len(emails) == 0 {
-		return nil, errors.New("at least one contact email is required")
-	}
-
 	contacts := make([]Contact, len(emails))
 	for i, email := range emails {
 		contacts[i] = Contact{Email: email}
 	}
 
-	return &Campaign{
+	campaign := &Campaign{
 		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
 		CreatedAt:   time.Now(),
 		Contacts:    contacts,
-	}, nil
+	}
+
+	err := internalerrors.ValidateDomain(campaign)
+
+	if err != nil {
+		return nil, err
+	}
+	return campaign, nil
 }

@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"campaign-manager/internal/contract"
+	internalerrors "campaign-manager/internal/internalErrors"
 	"errors"
 	"testing"
 
@@ -18,6 +19,10 @@ func (r *repositoryMock) Save(campaign *Campaign) error {
 	return args.Error(0)
 }
 
+func (r *repositoryMock) Get() ([]Campaign, error) {
+	return nil, nil
+}
+
 var (
 	newCampaign = contract.NewCampaign{
 		Name:        "New Campaign",
@@ -26,7 +31,7 @@ var (
 			"test@test.com",
 		},
 	}
-	service = Service{}
+	service = ServiceImp{}
 )
 
 func Test_Create_Campaign(t *testing.T) {
@@ -43,9 +48,14 @@ func Test_Create_Campaign(t *testing.T) {
 
 func Test_Create_Campaign_ValidateDomainError(t *testing.T) {
 	assert := assert.New(t)
-	newCampaign.Name = ""
 
-	_, err := service.Create(newCampaign)
+	_, err := service.Create(contract.NewCampaign{
+		Name:        "",
+		Description: "This is a test campaign",
+		Emails: []string{
+			"test@test.com",
+		},
+	})
 
 	assert.NotNil(err)
 }
@@ -70,12 +80,11 @@ func Test_Create_SaveCampaign(t *testing.T) {
 
 func Test_Create_ValidateRepositorySave(t *testing.T) {
 	assert := assert.New(t)
-	errorMessage := "error on saving campaign"
 	mockedRepository := new(repositoryMock)
-	mockedRepository.On("Save", mock.Anything).Return(errors.New(errorMessage))
+	mockedRepository.On("Save", mock.Anything).Return(errors.New("error"))
 	service.Repository = mockedRepository
 
 	_, err := service.Create(newCampaign)
 
-	assert.Equal(errorMessage, err.Error())
+	assert.True(errors.Is(internalerrors.ErrInternalError, err))
 }

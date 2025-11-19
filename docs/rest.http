@@ -1,0 +1,13 @@
+POST http://localhost:3000/campaigns
+
+{
+    "name": "Mousepad",
+    "description": "A new campaign",
+    "emails": [
+        "test@test.com"
+    ]
+}
+
+###
+
+GET  http://localhost:3000/campaigns
