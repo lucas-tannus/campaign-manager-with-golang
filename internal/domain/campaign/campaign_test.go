@@ -89,3 +89,11 @@ func Test_CreateCampaign_EmailNotEmpty(t *testing.T) {
 	assert.Nil(campaign)
 	assert.Equal(err.Error(), "email is invalid")
 }
+
+func Test_CreateCampaign_With_Pending_Status(t *testing.T) {
+	assert := assert.New(t)
+
+	campaign, _ := CreateCampaign(name, description, emails)
+
+	assert.Equal(StatusPending, campaign.Status)
+}
