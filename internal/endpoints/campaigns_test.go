@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -23,8 +24,9 @@ func (s *serviceMock) Create(newCampaign contract.NewCampaign) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (r *serviceMock) FindAll() ([]campaign.Campaign, error) {
-	return nil, nil
+func (s *serviceMock) FindAll() ([]campaign.Campaign, error) {
+	args := s.Called()
+	return args.Get(0).([]campaign.Campaign), args.Error(1)
 }
 
 var (
@@ -34,6 +36,19 @@ var (
 		Description: "This is a campaign test",
 		Emails: []string{
 			"test@test.com",
+		},
+	}
+	campaigns = []campaign.Campaign{
+		{
+			ID:          uuid.New().String(),
+			Name:        "Campaign Test",
+			Description: "This is a campaign test",
+			CreatedAt:   time.Now(),
+			Contacts: []campaign.Contact{
+				{
+					Email: "test@test.com",
+				},
+			},
 		},
 	}
 )
@@ -59,6 +74,23 @@ func Test_CampaignPost_With_Success(t *testing.T) {
 	obj, status, err := handler.CampaignPost(res, req)
 
 	assert.Equal(status, 201)
+	assert.Nil(err)
+	assert.NotNil(obj)
+}
+
+func Test_CampaignGet_With_Success(t *testing.T) {
+	assert := assert.New(t)
+	service := new(serviceMock)
+	handler := Handler{
+		CampaignService: service,
+	}
+	service.On("FindAll", mock.Anything).Return(campaigns, nil)
+	req, _ := http.NewRequest("GET", "/", nil)
+	res := httptest.NewRecorder()
+
+	obj, status, err := handler.CampaignGet(res, req)
+
+	assert.Equal(status, 200)
 	assert.Nil(err)
 	assert.NotNil(obj)
 }
