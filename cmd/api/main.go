@@ -27,6 +27,7 @@ func main() {
 
 	router.Post("/campaigns", endpoints.HandlerError(handler.CampaignPost))
 	router.Get("/campaigns", endpoints.HandlerError(handler.CampaignGet))
+	router.Get("/campaigns/{campaignUuid}", endpoints.HandlerError(handler.CampaignGetByUuid))
 
 	http.ListenAndServe(":3000", router)
 }
