@@ -7,12 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Status string
-
 const (
-	StatusPending   Status = "pending"
-	StatusCompleted Status = "completed"
-	StatusError     Status = "error"
+	StatusPending   string = "pending"
+	StatusCompleted string = "completed"
+	StatusError     string = "error"
 )
 
 type Contact struct {
@@ -23,7 +21,7 @@ type Campaign struct {
 	ID          string    `validate:"required"`
 	Name        string    `validate:"min=5,max=24"`
 	Description string    `validate:"min=5,max=1024"`
-	Status      Status    `validate:"required,oneof=pending completed error"`
+	Status      string    `validate:"required,oneof=pending completed error"`
 	CreatedAt   time.Time `validate:"required"`
 	Contacts    []Contact `validate:"min=1,dive"`
 }

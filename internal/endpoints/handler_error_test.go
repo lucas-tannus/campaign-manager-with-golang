@@ -61,3 +61,19 @@ func Test_HandlerError_With_ValidationError(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, res.Code)
 	assert.Contains(res.Body.String(), errorMessage)
 }
+
+func Test_HandlerError_With_ResourceNotFound(t *testing.T) {
+	assert := assert.New(t)
+	mockedEndpoint := func(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
+		return nil, 0, internalerrors.ErrResourceNotFound
+	}
+
+	handleFunc := HandlerError(mockedEndpoint)
+	req, _ := http.NewRequest("POST", "", nil)
+	res := httptest.NewRecorder()
+
+	handleFunc.ServeHTTP(res, req)
+
+	assert.Equal(http.StatusNotFound, res.Code)
+	assert.Contains(res.Body.String(), internalerrors.ErrResourceNotFound.Error())
+}

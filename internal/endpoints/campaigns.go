@@ -4,6 +4,7 @@ import (
 	"campaign-manager/internal/contract"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
 
@@ -21,4 +22,10 @@ func (h *Handler) CampaignPost(w http.ResponseWriter, r *http.Request) (interfac
 func (h *Handler) CampaignGet(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
 	campaigns, err := h.CampaignService.FindAll()
 	return campaigns, 200, err
+}
+
+func (h *Handler) CampaignGetByUuid(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
+	campaignUuid := chi.URLParam(r, "campaignUuid")
+	campaign, err := h.CampaignService.FindByUuid(campaignUuid)
+	return campaign, 200, err
 }

@@ -29,6 +29,11 @@ func (s *serviceMock) FindAll() ([]campaign.Campaign, error) {
 	return args.Get(0).([]campaign.Campaign), args.Error(1)
 }
 
+func (s *serviceMock) FindByUuid(campaignUuid string) (*contract.CampaignResponse, error) {
+	args := s.Called(campaignUuid)
+	return args.Get(0).(*contract.CampaignResponse), args.Error(1)
+}
+
 var (
 	campaignId = uuid.New().String()
 	body       = contract.NewCampaign{
@@ -89,6 +94,29 @@ func Test_CampaignGet_With_Success(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	obj, status, err := handler.CampaignGet(res, req)
+
+	assert.Equal(status, 200)
+	assert.Nil(err)
+	assert.NotNil(obj)
+}
+
+func Test_CampaignGetByUuid_With_Success(t *testing.T) {
+	assert := assert.New(t)
+	service := new(serviceMock)
+	handler := Handler{
+		CampaignService: service,
+	}
+	response := &contract.CampaignResponse{
+		ID:          campaigns[0].ID,
+		Name:        campaigns[0].Name,
+		Description: campaigns[0].Description,
+		Status:      campaigns[0].Status,
+	}
+	service.On("FindByUuid", mock.Anything).Return(response, nil)
+	req, _ := http.NewRequest("GET", "/", nil)
+	res := httptest.NewRecorder()
+
+	obj, status, err := handler.CampaignGetByUuid(res, req)
 
 	assert.Equal(status, 200)
 	assert.Nil(err)

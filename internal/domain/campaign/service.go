@@ -8,6 +8,7 @@ import (
 type Service interface {
 	Create(newCampaign contract.NewCampaign) (string, error)
 	FindAll() ([]Campaign, error)
+	FindByUuid(campaignUuid string) (*contract.CampaignResponse, error)
 }
 
 type ServiceImp struct {
@@ -31,5 +32,30 @@ func (s *ServiceImp) Create(newCampaign contract.NewCampaign) (string, error) {
 }
 
 func (s *ServiceImp) FindAll() ([]Campaign, error) {
-	return s.Repository.Get()
+	res, err := s.Repository.Get()
+
+	if err != nil {
+		return nil, internalerrors.ErrInternalError
+	}
+
+	return res, nil
+}
+
+func (s *ServiceImp) FindByUuid(campaignUuid string) (*contract.CampaignResponse, error) {
+	res, err := s.Repository.GetByUuid(campaignUuid)
+
+	if err != nil {
+		return nil, internalerrors.ErrInternalError
+	}
+
+	if res == nil {
+		return (*contract.CampaignResponse)(nil), internalerrors.ErrResourceNotFound
+	}
+
+	return &contract.CampaignResponse{
+		ID:          res.ID,
+		Name:        res.Name,
+		Description: res.Description,
+		Status:      res.Status,
+	}, nil
 }
